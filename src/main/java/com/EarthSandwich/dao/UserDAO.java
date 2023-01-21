@@ -1,15 +1,18 @@
 package com.EarthSandwich.dao;
 
-import java.util.List;
-
 import com.EarthSandwich.entity.User;
 
 public interface UserDAO {
-	public List<User> findAll();
 
 	public User findById(int id);
+
+	public User findByName(String name);
 
 	public void save(User user);
 
 	public void deleteById(int id);
+
+	public User findByEmail(String email);
+
+	public boolean findExistUser(String email, String pass);
 }

@@ -1,8 +1,8 @@
 #EarthSandwich 서버
 
-##EarthSandwich가 무엇인지 알고 싶으면 아래 링크를 참조
+##EarthSandwich/ 지구샌드위치란 :
 
-- [여기다가 링크 넣기!!!!!!!!!!!!!!!!!!] ()
+지구의 서로 반대편에 있는 두 사람이 각각 빵을 땅에 놓는 일종의 장난이다
 
 ##들어가며
 
@@ -21,7 +21,7 @@ Udemy를 통하여 독학으로 Springframework을 배웠으며 독학후 제작
 
 ### 3. 사용 기술
 
-#### 주요 프레임워크
+#### 주요 언어 및 프레임워크
 
 - Java 11
 - Spring Boot
@@ -53,7 +53,8 @@ Udemy를 통하여 독학으로 Springframework을 배웠으며 독학후 제작
 ## 규모 및 설계
 
 ### 1. DB 설계
-![DB models](./RMimage/)
+
+![DB models](./RMimage/name.png)
 
 ### DB 설계
 

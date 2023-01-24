@@ -15,6 +15,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import com.EarthSandwich.security.HttpUtils;
+
 import io.jsonwebtoken.ExpiredJwtException;
 
 @Component
@@ -24,17 +26,20 @@ public class JwtFilter extends OncePerRequestFilter {
 
 	private JwtTokenUtil jwtTokenUtil;
 
+	private HttpUtils httpUtils;
+
 	@Autowired
-	public JwtFilter(JwtUserDetailsService jwtUserDetailsService, JwtTokenUtil jwtTokenUtil) {
+	public JwtFilter(JwtUserDetailsService jwtUserDetailsService, JwtTokenUtil jwtTokenUtil, HttpUtils httpUtils) {
 		this.jwtUserDetailsService = jwtUserDetailsService;
 		this.jwtTokenUtil = jwtTokenUtil;
+		this.httpUtils = httpUtils;
 
 	}
 
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
 			throws ServletException, IOException {
-
+		logger.info(httpUtils.getRequestIP(request));
 		String email = null;
 		String jwtToken = null;
 
@@ -52,6 +57,8 @@ public class JwtFilter extends OncePerRequestFilter {
 
 			try {
 				email = jwtTokenUtil.getUsernameFromToken(jwtToken);
+				String log = String.format("Email: %s  IP: %s", email, httpUtils.getRequestIP(request));
+				logger.info(log);
 			} catch (IllegalArgumentException e) {
 				System.out.println("Unable to get JWT Token");
 			} catch (ExpiredJwtException e) {

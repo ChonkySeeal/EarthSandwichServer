@@ -132,10 +132,10 @@ Udemy를 통하여 독학으로 Springframework을 배웠으며 독학후 제작
 
 ## 추가해야할 기능들
 
-- 비밀번호 리셋 이메일 전송 및 email valification 기능
+- ~~비밀번호 리셋 이메일 전송 및 email valification 기능~~
 - Oauth2.0을 이용한 구글 로그인
 - UI 좀 더 다듬기
-- JUnit Test 공부하고 적용하기
+- ~~JUnit Test 공부하고 적용하기~~
 
 ## 어려웠던 점들
 

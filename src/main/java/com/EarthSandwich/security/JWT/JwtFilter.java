@@ -56,7 +56,7 @@ public class JwtFilter extends OncePerRequestFilter {
 		if (jwtToken != null) {
 
 			try {
-				email = jwtTokenUtil.getUsernameFromToken(jwtToken);
+				email = jwtTokenUtil.getEmailFromToken(jwtToken);
 				String log = String.format("Email: %s  IP: %s", email, httpUtils.getRequestIP(request));
 				logger.info(log);
 			} catch (IllegalArgumentException e) {

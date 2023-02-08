@@ -90,9 +90,15 @@ public class MemberRestController {
 		return dto;
 	}
 
-	@PutMapping("/account")
-	public void changePassword(@AuthenticationPrincipal User user, PasswordRequestDTO dto) {
-		userService.changePassword(dto.getOldpassword(), dto.getNewpassword(), user.getUsername());
+	@PutMapping(value = { "/account/{token}", "/account" })
+	public void changePassword(@AuthenticationPrincipal User user, PasswordRequestDTO dto,
+			@PathVariable(required = false) String token) {
+		if (token == null) {
+			userService.sendPasswordResetEmail(user.getUsername());
+		} else {
+			userService.confirmUserPasswordLink(token, user.getUsername(), dto.getOldpassword(), dto.getNewpassword());
+		}
+
 	}
 
 	@DeleteMapping("/account")

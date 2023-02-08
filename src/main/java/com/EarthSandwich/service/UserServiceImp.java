@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import javax.servlet.http.Cookie;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,30 +25,35 @@ public class UserServiceImp implements UserService {
 
 	private JwtTokenUtil jwtTokenUtil;
 
+	private EmailService emailService;
+
+	@Value("${email.url}")
+	private String url;
+
 	@Autowired
-	public UserServiceImp(UserDAO userDAO, PasswordAction passwordAction, JwtTokenUtil jwtTokenUtil) {
+	public UserServiceImp(UserDAO userDAO, PasswordAction passwordAction, JwtTokenUtil jwtTokenUtil,
+			EmailService emailService) {
 		this.userDAO = userDAO;
 		this.passwordAction = passwordAction;
 		this.jwtTokenUtil = jwtTokenUtil;
-
+		this.emailService = emailService;
 	}
 
 	@Transactional
 	@Override
 	public User findById(int id) {
-
 		return userDAO.findById(id);
 	}
 
 	@Transactional
 	@Override
-	public void save(User user) {
+	public void registerUser(User user) {
 		if (userDAO.findByName(user.getUsername()) != null) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
 					"username \'" + user.getUsername() + "\' is already taken");
 		}
 
-		if (userDAO.findByEmail(user.getEmail()) != null) {
+		if (userDAO.findByEmail(user.getEmail()) != null && user.getVerified() == 1) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "email is already registered");
 		}
 
@@ -58,7 +64,57 @@ public class UserServiceImp implements UserService {
 
 		user.setPassword(passwordAction.encryptPass(user.getPassword()));
 		userDAO.save(user);
+		String link = String.format("%s/user/confirmEmail?token=%s", url,
+				jwtTokenUtil.generateEmailToken(user.getEmail()));
+		String email = emailService.buildEmailValidationEmail(user.getUsername(), link);
+		emailService.sendEmail(user.getEmail(), email, "Please Verify Your Password");
+	}
 
+	@Override
+	@Transactional
+	public void confirmUserEmail(String token) {
+		if (!jwtTokenUtil.isTokenExpired(token)) {
+			String email = jwtTokenUtil.getEmailFromToken(token);
+			User user = userDAO.findByEmail(email);
+			user.setVerified(1);
+			userDAO.save(user);
+		} else {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The link is not valid");
+		}
+	}
+
+	@Override
+	@Transactional
+	public void sendPasswordResetEmail(String email) {
+		String link = String.format("%s/user/reset?token=%s", url, jwtTokenUtil.generateEmailToken(email));
+		String emailContent = emailService.buildPasswordResetEmail(email, link);
+		emailService.sendEmail(email, emailContent, "Reset Your Password");
+	};
+
+	@Override
+	@Transactional
+	public void confirmUserPasswordLink(String passwordToken, String userEmail, String oldPassword,
+			String newPassword) {
+		if (!jwtTokenUtil.isTokenExpired(passwordToken)) {
+			String tokenEmail = jwtTokenUtil.getEmailFromToken(passwordToken);
+			if (tokenEmail.equals(userEmail)) {
+				User user = userDAO.findByEmail(userEmail);
+
+				if (!passwordAction.passwordVerify(oldPassword, user.getPassword()))
+					throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "CurrentPassword is not matched");
+				if (!passwordAction.validatePass(newPassword))
+					throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid new password");
+				LocalDateTime current = LocalDateTime.now();
+				user.setModified_date(current);
+				user.setPassword(passwordAction.encryptPass(newPassword));
+				userDAO.save(user);
+			} else {
+				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unauthorized user attempt");
+			}
+
+		} else {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The link is not valid");
+		}
 	}
 
 	@Transactional
@@ -101,29 +157,37 @@ public class UserServiceImp implements UserService {
 
 	@Override
 	public Cookie[] authenticateUser(String email, String pass) {
-		try {
-			final User user = userDAO.findByEmail(email);
-			final String token = jwtTokenUtil.generateToken(user);
-			if (!passwordAction.passwordVerify(pass, user.getPassword())) {
-				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "email or password is wrong");
-			}
-			Cookie[] cookies = new Cookie[2];
-			cookies[0] = new Cookie("accessToken", token);
-			cookies[0].setMaxAge(24 * 60 * 60);
-			cookies[0].setHttpOnly(true);
-			cookies[0].setPath("/");
-			cookies[0].setSecure(true);
-			cookies[0].setDomain("earthsandwich.lol");
-			cookies[1] = new Cookie("loginstatus", user.getUsername());
-			cookies[1].setMaxAge(24 * 60 * 60);
-			cookies[1].setSecure(true);
-			cookies[1].setDomain("earthsandwich.lol");
-			cookies[1].setPath("/");
 
-			return cookies;
-		} catch (Exception e) {
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Account not found");
+		User user = userDAO.findByEmail(email);
+		if (user == null) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "email or password is invalid");
 		}
+		if (!passwordAction.passwordVerify(pass, user.getPassword())) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "email or password is invalid");
+		}
+
+		if (user.getVerified() == 0) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "you must verify your email");
+		}
+		final String token = jwtTokenUtil.generateToken(user);
+
+		if (user.getVerified() == 0) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "you need to confirm your email");
+		}
+		Cookie[] cookies = new Cookie[2];
+		cookies[0] = new Cookie("accessToken", token);
+		cookies[0].setMaxAge(24 * 60 * 60);
+		cookies[0].setHttpOnly(true);
+		cookies[0].setPath("/");
+		cookies[0].setSecure(true);
+		cookies[0].setDomain("earthsandwich.lol");
+		cookies[1] = new Cookie("loginstatus", user.getUsername());
+		cookies[1].setMaxAge(24 * 60 * 60);
+		cookies[1].setSecure(true);
+		cookies[1].setDomain("earthsandwich.lol");
+		cookies[1].setPath("/");
+
+		return cookies;
 
 	}
 
@@ -143,25 +207,6 @@ public class UserServiceImp implements UserService {
 		cookies[1].setSecure(true);
 		cookies[1].setDomain("earthsandwich.lol");
 		return cookies;
-	}
-
-	@Override
-	@Transactional
-	public void changePassword(String oldPassword, String newPassword, String email) {
-		User user = userDAO.findByEmail(email);
-		if (user != null) {
-			if (!passwordAction.passwordVerify(oldPassword, user.getPassword()))
-				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "CurrentPassword is not matched");
-			if (!passwordAction.validatePass(newPassword))
-				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid new password");
-			LocalDateTime current = LocalDateTime.now();
-			user.setModified_date(current);
-			user.setPassword(passwordAction.encryptPass(newPassword));
-			userDAO.save(user);
-		} else {
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "unathorized user attempt");
-		}
-
 	}
 
 }

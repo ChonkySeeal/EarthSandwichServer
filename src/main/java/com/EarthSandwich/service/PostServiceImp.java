@@ -17,7 +17,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.EarthSandwich.dao.GeoDAO;
 import com.EarthSandwich.dao.PostDAO;
+import com.EarthSandwich.dto.CitiesResponseDTO;
 import com.EarthSandwich.dto.EditPostRequestDTO;
 import com.EarthSandwich.dto.PostListResponseDTO;
 import com.EarthSandwich.dto.PostRequestDTO;
@@ -39,6 +41,8 @@ public class PostServiceImp implements PostService {
 
 	private UserService userService;
 
+	private GeoDAO geoDAO;
+
 	private int pageSize = 6;
 
 	@Value("${aws.bucketname}")
@@ -50,10 +54,11 @@ public class PostServiceImp implements PostService {
 	private String friendlyURL;
 
 	@Autowired
-	public PostServiceImp(PostDAO postDAO, AmazonS3 amazonS3, UserService userService) {
+	public PostServiceImp(PostDAO postDAO, AmazonS3 amazonS3, UserService userService, GeoDAO geoDAO) {
 		this.postDAO = postDAO;
 		this.amazonS3 = amazonS3;
 		this.userService = userService;
+		this.geoDAO = geoDAO;
 	}
 
 	@Transactional
@@ -152,9 +157,14 @@ public class PostServiceImp implements PostService {
 				postlists.add(tempParentPost);
 			} else {
 				final String stringUrl = String.format("%s/%s", friendlyURL, post.getPicture());
-
+				Pageable cityPage = PageRequest.of(0, 5);
+				int latitude = (post.getLatitude() / 100) * -1;
+				int longitude = latitude <= 0 ? post.getLongitude() / 100 + 180 : post.getLongitude() / 100 + 180;
+				Page<CitiesResponseDTO> paginationResultGeo = geoDAO.findNearestCities(latitude, longitude, cityPage);
+				List<CitiesResponseDTO> cities = paginationResultGeo.getContent();
 				PostResponseDTO tempPost = new PostResponseDTO(post.getId(), post.getTitle(), post.getWriter(),
-						post.getContent(), stringUrl, post.getLatitude(), post.getLongitude(), null, post.getM_date());
+						post.getContent(), stringUrl, post.getLatitude(), post.getLongitude(), null, post.getM_date(),
+						cities);
 				postlists.add(tempPost);
 			}
 

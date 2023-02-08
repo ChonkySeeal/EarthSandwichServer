@@ -51,6 +51,10 @@ public class User {
 	@Column(name = "modified_date")
 	private LocalDateTime modified_date;
 
+	@NotNull
+	@Column(name = "verified")
+	private int verified;
+
 	@JsonManagedReference
 	@OneToMany(mappedBy = "user")
 	private Set<Post> posts;
@@ -90,6 +94,14 @@ public class User {
 
 	public String getEmail() {
 		return email;
+	}
+
+	public int getVerified() {
+		return verified;
+	}
+
+	public void setVerified(int verified) {
+		this.verified = verified;
 	}
 
 	public void setEmail(String email) {

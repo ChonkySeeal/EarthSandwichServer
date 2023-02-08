@@ -10,7 +10,13 @@ public interface UserService {
 
 	public User findByName(String name);
 
-	public void save(User user);
+	public void registerUser(User user);
+
+	public void confirmUserEmail(String token);
+
+	public void sendPasswordResetEmail(String email);
+
+	public void confirmUserPasswordLink(String passwordToken, String userEmail, String oldPassword, String newPassword);
 
 	public Cookie[] deleteAccount(String email);
 
@@ -19,7 +25,5 @@ public interface UserService {
 	public Cookie[] authenticateUser(String email, String pass);
 
 	public Cookie[] logoutUser();
-
-	public void changePassword(String oldPassword, String newPassword, String email);
 
 }

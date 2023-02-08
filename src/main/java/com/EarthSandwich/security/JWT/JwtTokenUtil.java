@@ -21,12 +21,14 @@ public class JwtTokenUtil implements Serializable {
 
 	private static final long serialVersionUID = -2550185165626007488L;
 
-	public static final long JWT_TOKEN_VALIDITY = 1000L * 60 * 60 * 24; // 24시간
+	public static final long JWT_TOKEN_VALIDITY = 1000L * 60 * 60 * 24; // 24hours
+
+	public static final long JWT_EMAIL_TOKEN_VALIDITY = 1000L * 60 * 15; // 15minutes시간
 
 	@Value("${jwt.secret}")
 	private String secret;
 
-	public String getUsernameFromToken(String token) {
+	public String getEmailFromToken(String token) {
 		return getClaimFromToken(token, Claims::getSubject);
 	}
 
@@ -46,7 +48,7 @@ public class JwtTokenUtil implements Serializable {
 	}
 
 	// check if the token has expired
-	private Boolean isTokenExpired(String token) {
+	public Boolean isTokenExpired(String token) {
 		final Date expiration = getExpirationDateFromToken(token);
 		return expiration.before(new Date());
 	}
@@ -57,9 +59,9 @@ public class JwtTokenUtil implements Serializable {
 		return doGenerateToken(claims, user.getEmail());
 	}
 
-	public String generateLogoutToken(String token) {
-		return Jwts.builder().setClaims(getAllClaimsFromToken(token)).setSubject(getUsernameFromToken(token))
-				.setIssuedAt(new Date(System.currentTimeMillis())).setExpiration(new Date(System.currentTimeMillis()))
+	public String generateEmailToken(String email) {
+		return Jwts.builder().setSubject(email).setIssuedAt(new Date(System.currentTimeMillis()))
+				.setExpiration(new Date(System.currentTimeMillis() + JWT_EMAIL_TOKEN_VALIDITY))
 				.signWith(SignatureAlgorithm.HS512, secret.getBytes()).compact();
 	}
 
@@ -76,7 +78,7 @@ public class JwtTokenUtil implements Serializable {
 
 	// validate token
 	public Boolean validateToken(String token, UserDetails userDetails) {
-		final String username = getUsernameFromToken(token);
+		final String username = getEmailFromToken(token);
 		return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
 	}
 }

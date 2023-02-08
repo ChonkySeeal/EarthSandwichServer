@@ -2,13 +2,10 @@ package com.EarthSandwich.security;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 @Component
 public class HttpUtils {
-	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	// ip headers
 	private static final String[] IP_HEADERS = { "X-Forwarded-For", "Proxy-Client-IP", "WL-Proxy-Client-IP",

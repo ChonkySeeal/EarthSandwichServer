@@ -1,5 +1,7 @@
 # EarthSandwich 서버
 
+Earthsandwich.lol
+
 ## EarthSandwich/ 지구샌드위치란 :
 
 ![earthsandwich](./RMimage/earthsandwich.png)

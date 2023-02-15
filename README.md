@@ -1,6 +1,6 @@
 # EarthSandwich 서버
 
-Earthsandwich.lol
+[Earthsandwich.lol](https://Earthsandwich.lol/)
 
 ## EarthSandwich/ 지구샌드위치란 :
 

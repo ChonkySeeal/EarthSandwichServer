@@ -53,13 +53,21 @@ public class UserServiceImp implements UserService {
 					"username \'" + user.getUsername() + "\' is already taken");
 		}
 
-		if (userDAO.findByEmail(user.getEmail()) != null && user.getVerified() == 1) {
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "email is already registered");
-		}
-
 		if (!passwordAction.validatePass(user.getPassword())) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
 					"Password must contain at least one number, one uppercase, one lowercase, one special character (!@#$%&), and needs to be between 8-16 characters long");
+		}
+
+		User existedUser = userDAO.findByEmail(user.getEmail());
+
+		if (existedUser != null) {
+
+			if (existedUser.getVerified() == 1) {
+				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "email is already registered");
+			} else {
+				userDAO.deleteById(existedUser.getId());
+			}
+
 		}
 
 		user.setPassword(passwordAction.encryptPass(user.getPassword()));

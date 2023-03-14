@@ -41,12 +41,12 @@ public class Comment {
 	@Column(name = "modified_date")
 	private LocalDateTime m_date;
 
-	@ManyToOne(fetch = FetchType.LAZY, optional = false)
+	@ManyToOne(fetch = FetchType.EAGER, optional = false)
 	@JoinColumn(name = "post_id", nullable = false)
 	private Post post;
 
 	@JsonBackReference
-	@ManyToOne(fetch = FetchType.LAZY, optional = false)
+	@ManyToOne(fetch = FetchType.EAGER, optional = false)
 	@JoinColumn(name = "user_id", nullable = false)
 	private User user;
 

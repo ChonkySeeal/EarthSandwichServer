@@ -69,7 +69,7 @@ public class Post {
 	private boolean isParent;
 
 	@JsonBackReference
-	@ManyToOne(fetch = FetchType.LAZY, optional = false)
+	@ManyToOne(fetch = FetchType.EAGER, optional = false)
 	@JoinColumn(name = "user_id", nullable = true)
 	private User user;
 

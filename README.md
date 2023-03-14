@@ -128,6 +128,49 @@ Udemy를 통하여 독학으로 Springframework을 배웠으며 독학후 제작
 ![comment Schema](./RMimage/comment.png)
 ![comment API](./RMimage/commentapi.png)
 
+# 화면
+
+## 회원가입
+
+![회원가입](./RMimage/registerform.png)
+
+## verification email
+
+![verification email](./RMimage/emailverification.png)
+회원가입을 하면 이메일 인증 이메일을 발송합니다.
+
+## 인증 완료 화면
+
+![인증완료화면](./RMimage/emailverification2.png)
+
+## 로그인
+
+![로그인](./RMimage/loginform.png)
+
+## 로그인 후 jwt 발급
+
+![로그인](./RMimage/cookie.png)
+유저가 로그인후 jwt을 발급받습니다. jwt는 httponly 이기 때문에 javascript로 접근이 불가능하고 secured이기에 ssl를 통하여서 전달 받습니다.
+
+## post 작성
+
+![로그인](./RMimage/postform.png)
+유저가 jwt 발급받은후에 post 작성을 할 수 있습니다. postform에서는 자신의 좌표와 그 좌표와 정반대되는 좌표 (antipode)을 보여줍니다. 만약에 jwt 토큰이 없는 익명의 유저가 post작성을 시도할 경우 "unauthorized user attempt" 메시지를 alert로 보여줍니다.
+
+## 작성된 post
+
+![로그인](./RMimage/postui.png)
+작성된 post는 작성한 유저 좌표의 antipode를 보여주고 antipode와 가까운 도시들을 geo table부터 검색하여 보여줍니다.
+
+## 완성된 지구샌드위치 post
+
+![로그인](./RMimage/completedpost.png)
+
+## 완성된 지구샌드위치 post 조회
+
+![로그인](./RMimage/completepost2.png)
+완성된 지구샌드위치 post를 조회 할 경우 사진에 마우스를 hover 할 경우 해당 post를 작성한 유저의 좌표가 overlay형식으로 보여집니다.
+
 # ETC
 
 ## 추가해야할 기능들

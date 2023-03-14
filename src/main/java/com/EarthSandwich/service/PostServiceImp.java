@@ -69,7 +69,7 @@ public class PostServiceImp implements PostService {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot upload empty file");
 		}
 
-		if (postDTO.getPicture().getSize() > 50000) {
+		if (postDTO.getPicture().getSize() > 55000) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "image cannot be more than 50KB");
 		}
 
@@ -189,8 +189,6 @@ public class PostServiceImp implements PostService {
 					post.getContent(), stringUrl, post.getLatitude(), post.getLongitude(), tempChildPost,
 					post.getM_date());
 			return tempParentPost;
-		} else {
-
 		}
 		final String stringUrl = String.format("%s/%s", friendlyURL, post.getPicture());
 		PostResponseDTO tempPost = new PostResponseDTO(post.getId(), post.getTitle(), post.getWriter(),
